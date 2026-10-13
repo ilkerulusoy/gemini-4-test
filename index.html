@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Super Baaren Adventure 3D — Kingdom of Honey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <canvas id="game-canvas"></canvas>
+
+  <!-- TITLE SCREEN OVERLAY -->
+  <section id="title-screen" class="overlay-screen">
+    <div class="title-card">
+      <div class="badge-tag">N64 SANDBOX 3D PLATFORMER</div>
+      <h1 class="game-logo">SUPER BAAREN<span>ADVENTURE 3D</span></h1>
+      <p class="title-desc">
+        Explore vibrant 3D islands, master double-jumps, belly-dives, and ground-pounds, defeat the Purple Honey Bees, and rescue all 10 captive bears across the Kingdom!
+      </p>
+      <div class="title-actions">
+        <button id="btn-play-game" class="tactile-btn gold xlarge">▶ START ADVENTURE</button>
+        <button id="btn-title-levels" class="tactile-btn secondary large">🗺️ WORLD SELECT</button>
+      </div>
+      <div class="controls-strip">
+        <span><b>WASD / Arrows</b> Move</span>
+        <span><b>Space</b> Jump / Double Jump</span>
+        <span><b>Shift / E</b> Belly Dive</span>
+        <span><b>Q</b> Ground Pound</span>
+        <span><b>F / Enter</b> Paw Attack / Throw</span>
+        <span><b>R</b> Grab Crate / Bomb</span>
+        <span><b>Drag Mouse</b> Orbit Camera</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- IN-GAME HUD -->
+  <header id="hud" class="hidden">
+    <div class="hud-top-bar">
+      <div class="hud-stat-group">
+        <div id="hud-hearts" class="hud-pill hearts-pill" aria-label="Health"></div>
+        <div class="hud-pill coin-pill">
+          <span class="pill-icon">🪙</span>
+          <span id="hud-coins">0</span>
+        </div>
+        <div class="hud-pill bear-pill">
+          <span class="pill-icon">🐻</span>
+          <span id="hud-bears">0/1</span>
+        </div>
+      </div>
+
+      <div class="hud-level-banner">
+        <div id="hud-level-name" class="level-title">Bear Village Hub</div>
+        <div id="hud-level-sub" class="level-sub">Kingdom Sanctuary</div>
+      </div>
+
+      <div class="hud-right-actions">
+        <div class="hud-pill timer-pill">⏱ <span id="hud-timer">0:00.0</span></div>
+        <button id="btn-hud-worlds" class="tactile-btn small primary" title="World Select">🗺️ <span class="btn-label">Worlds</span></button>
+        <button id="btn-hud-wardrobe" class="tactile-btn small gold" title="Royal Outfitter">👑 <span class="btn-label">Outfitter</span></button>
+        <button id="btn-hud-pause" class="tactile-btn small secondary" title="Settings & Pause">⚙️</button>
+    </div>
+
+    <!-- 3D WORLD RADAR MINIMAP -->
+    <div class="radar-wrap">
+      <canvas id="radar-canvas" width="116" height="116"></canvas>
+    </div>
+
+    <!-- BOSS HEALTH BAR -->
+    <div id="boss-hud" class="boss-banner hidden">
+      <div class="boss-title">🐝 QUEEN BEEMOTHEP — ROYAL HIVE SOVEREIGN</div>
+      <div class="boss-hp-track">
+        <div id="boss-hp-fill" class="boss-hp-fill"></div>
+      </div>
+      <div id="boss-status-label" class="boss-sub">Dodge Shockwave & Strike!</div>
+    </div>
+
+    <!-- CONTEXTUAL INTERACT PROMPT -->
+    <div id="interact-prompt" class="interact-prompt hidden"></div>
+
+    <!-- RESCUE CELEBRATION BANNER -->
+    <div id="rescue-banner" class="rescue-banner hidden">
+      <div class="rescue-star">🐻✨</div>
+      <div>
+        <h2 id="rescue-bear-name">Barnaby Rescued!</h2>
+        <p id="rescue-bear-sub">+10 Honey Coins Reward!</p>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast-msg" class="toast-msg hidden"></div>
+
+    <!-- TABLET / MOBILE VIRTUAL GAMEPAD: DIRECTIONAL DIAL PAD + A / B ARCADE BUTTONS -->
+    <div id="touch-controls" class="touch-controls">
+      <div id="touch-joystick-zone" class="dial-pad-zone" aria-label="Directional Dial Pad">
+        <span class="dial-arrow up">▲</span>
+        <span class="dial-arrow right">▶</span>
+        <span class="dial-arrow down">▼</span>
+        <span class="dial-arrow left">◀</span>
+        <div class="dial-ring"></div>
+        <div id="touch-joystick-knob" class="joystick-knob"></div>
+      </div>
+
+      <div class="tablet-action-pad">
+        <div class="aux-action-row">
+          <button id="touch-btn-dive" class="touch-btn aux dive" title="Belly Dive [Shift]">DIVE</button>
+          <button id="touch-btn-pound" class="touch-btn aux grab" title="Grab / Drop Crate [R]">GRAB</button>
+        </div>
+        <div class="ab-arcade-row">
+          <button id="touch-btn-attack" class="touch-btn arcade-b" aria-label="B Button Attack">
+            <span class="ab-letter">B</span>
+            <span class="ab-sub">HIT / PAW</span>
+          </button>
+          <button id="touch-btn-jump" class="touch-btn arcade-a" aria-label="A Button Jump">
+            <span class="ab-letter">A</span>
+            <span class="ab-sub">JUMP ×2</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NPC DIALOG BOX -->
+  <aside id="dialog-box" class="dialog-box hidden">
+    <div id="dialog-speaker" class="dialog-speaker">Elder Grizz</div>
+    <p id="dialog-text" class="dialog-text"></p>
+    <div class="dialog-footer">
+      <button id="btn-dialog-next" class="tactile-btn gold">Continue ▶</button>
+    </div>
+  </aside>
+
+  <!-- WORLD SELECT MODAL -->
+  <section id="world-modal" class="modal-backdrop hidden">
+    <div class="modal-window wide">
+      <div class="modal-header">
+        <h2>🗺️ Select Kingdom World</h2>
+        <button id="btn-close-worlds" class="tactile-btn small danger">✕ Close</button>
+      </div>
+      <div id="world-grid" class="world-grid"></div>
+    </div>
+  </section>
+
+  <!-- ROYAL WARDROBE / HAT SHOP MODAL -->
+  <section id="shop-modal" class="modal-backdrop hidden">
+    <div class="modal-window wide">
+      <div class="modal-header">
+        <h2>👑 Tailor Honey's Royal Outfitter</h2>
+        <button id="btn-close-shop" class="tactile-btn small danger">✕ Close</button>
+      </div>
+      <h3 class="shop-section-title">Hats & Helmets</h3>
+      <div id="shop-hats-grid" class="shop-grid"></div>
+      <h3 class="shop-section-title">Capes & Cloaks</h3>
+      <div id="shop-capes-grid" class="shop-grid"></div>
+    </div>
+  </section>
+
+  <!-- PAUSE / SETTINGS MODAL -->
+  <section id="pause-modal" class="modal-backdrop hidden">
+    <div class="modal-window narrow">
+      <div class="modal-header">
+        <h2>⚙️ Adventure Paused</h2>
+      </div>
+      <div class="pause-actions">
+        <button id="btn-resume" class="tactile-btn gold">▶ Resume Game</button>
+        <button id="btn-respawn" class="tactile-btn primary">↺ Respawn at Checkpoint</button>
+        <button id="btn-return-hub" class="tactile-btn secondary">🏡 Return to Bear Village Hub</button>
+        <button id="btn-toggle-sfx" class="tactile-btn secondary">Sound Effects: ON</button>
+        <button id="btn-toggle-music" class="tactile-btn secondary">Music: ON</button>
+        <button id="btn-reset-save" class="tactile-btn danger">🗑️ Reset Save Progress</button>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

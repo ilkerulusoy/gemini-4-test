@@ -1,0 +1,6 @@
+node_modules/
+dist/
+docs/ss/
+.DS_Store
+*.log
+.wrangler/
